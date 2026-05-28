@@ -69,8 +69,25 @@ describe('Order.getByUserId()', () => {
     Order.add(makeOrder({ id: 'ORD-C', userId: 100 }));
     expect(Order.getByUserId('100')).toHaveLength(1);
   });
+  test('returns orders sorted newest first by createdAt', () => {
+    Order.add(makeOrder({ id: 'ORD-OLD', userId: 100, createdAt: '2026-05-01' }));
+    Order.add(makeOrder({ id: 'ORD-NEW', userId: 100, createdAt: '2026-05-10' }));
+    const result = Order.getByUserId(100);
+    expect(result[0].id).toBe('ORD-NEW');
+  });
   test('returns empty array when user has no orders', () => {
     expect(Order.getByUserId(999)).toEqual([]);
+  });
+});
+
+describe('Order.getAll() invalid JSON', () => {
+  test('returns empty array when orders file is broken', () => {
+    fs.writeFileSync(dataFile, '{bad json');
+    expect(Order.getAll()).toEqual([]);
+  });
+  test('returns empty array when orders JSON is an object', () => {
+    fs.writeFileSync(dataFile, '{"foo":1}');
+    expect(Order.getAll()).toEqual([]);
   });
 });
 
@@ -96,5 +113,17 @@ describe('Order.count() / totalRevenue()', () => {
     Order.add(makeOrder({ id: 'O1', total: 32.39 }));
     Order.add(makeOrder({ id: 'O2', total: 17.27 }));
     expect(Order.totalRevenue()).toBeCloseTo(49.66, 2);
+  });
+});
+
+describe('Order.add() default values', () => {
+  test('auto-fills createdAt when missing', () => {
+    const result = Order.add(makeOrder({ id: 'ORD-MISSING', createdAt: undefined }));
+    expect(result.createdAt).toBeDefined();
+  });
+
+  test('preserves explicit status when provided', () => {
+    const result = Order.add(makeOrder({ id: 'ORD-STAT', status: 'shipped' }));
+    expect(result.status).toBe('shipped');
   });
 });

@@ -52,6 +52,27 @@ describe('Account.findById()', () => {
   });
 });
 
+describe('Account.getAll() invalid JSON', () => {
+  test('returns empty array when accounts file is broken', () => {
+    fs.writeFileSync(dataFile, '{ invalid json');
+    expect(Account.getAll()).toEqual([]);
+  });
+  test('returns empty array when accounts JSON is an object', () => {
+    fs.writeFileSync(dataFile, '{"foo":"bar"}');
+    expect(Account.getAll()).toEqual([]);
+  });
+});
+
+describe('Account.verifyPassword()', () => {
+  test('supports legacy SHA256 password hashes', () => {
+    const crypto = require('crypto');
+    const password = 'legacy123';
+    const hash = crypto.createHash('sha256').update(password).digest('hex');
+    expect(Account.verifyPassword(password, hash)).toBe(true);
+    expect(Account.verifyPassword('wrong', hash)).toBe(false);
+  });
+});
+
 // ── add ──────────────────────────────────────────────────────
 describe('Account.add()', () => {
   test('creates account with correct fields', () => {

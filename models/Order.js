@@ -7,7 +7,9 @@ const dataFile = path.join(__dirname, '..', 'data', 'orders.json');
 
 function readOrders() {
   try {
-    return JSON.parse(fs.readFileSync(dataFile, 'utf8') || '[]');
+    const raw = fs.readFileSync(dataFile, 'utf8');
+    const orders = raw ? JSON.parse(raw) : [];
+    return Array.isArray(orders) ? orders : [];
   } catch (_) {
     return [];
   }

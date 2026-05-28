@@ -111,6 +111,37 @@ describe('logout', () => {
   });
 });
 
+describe('showRegister', () => {
+  test('renders register without success by default', () => {
+    const req = { session: {}, query: {} };
+    const res = mockRes();
+    authCtrl.showRegister(req, res);
+    expect(res.render).toHaveBeenCalledWith('register', expect.objectContaining({
+      cartCount: 0,
+      success: false,
+    }));
+  });
+
+  test('renders register success when ?success=1', () => {
+    const req = { session: {}, query: { success: '1' } };
+    const res = mockRes();
+    authCtrl.showRegister(req, res);
+    expect(res.render.mock.calls[0][1].success).toBe(true);
+  });
+});
+
+describe('showProfile', () => {
+  test('renders profile page for logged in user', () => {
+    const req = { session: { user: { name: 'Alice', email: 'alice@x.com', address: 'Test' } } };
+    const res = mockRes();
+    authCtrl.showProfile(req, res);
+    expect(res.render).toHaveBeenCalledWith('profile', expect.objectContaining({
+      user: expect.objectContaining({ email: 'alice@x.com' }),
+      cartCount: 0,
+    }));
+  });
+});
+
 describe('register', () => {
   test('renders error when fields missing', () => {
     const req = { session: {}, body: { name: '', email: '', password: '', address: '' } };
